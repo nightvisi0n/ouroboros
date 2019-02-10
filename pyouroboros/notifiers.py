@@ -3,6 +3,7 @@ import apprise
 from logging import getLogger
 from datetime import datetime, timezone
 
+from pyouroboros.helpers import get_tags_from_registry
 
 class NotificationManager(object):
     def __init__(self, config, data_manager):
@@ -50,10 +51,12 @@ class NotificationManager(object):
             ]
             body_fields.extend(
                 [
-                    "{} updated from {} to {}".format(
+                    "{} updated from digest {} (tags: {}) to {} (tags: {})".format(
                         container.name,
                         old_image.short_id.split(':')[1],
-                        new_image.short_id.split(':')[1]
+                        ', '.join(map(str, get_tags_from_registry(old_image.tags[0].split(':')[0], old_image.id))),
+                        new_image.short_id.split(':')[1],
+                        ', '.join(map(str, get_tags_from_registry(new_image.tags[0].split(':')[0], new_image.id))),
                     ) for container, old_image, new_image in container_tuples
                 ]
             )

@@ -4,7 +4,7 @@ from docker import DockerClient, tls
 from os.path import isdir, isfile, join
 from docker.errors import DockerException, APIError, NotFound
 
-from pyouroboros.helpers import set_properties
+from pyouroboros.helpers import set_properties, get_tags_from_registry
 
 
 class Docker(object):
@@ -208,7 +208,14 @@ class Container(object):
                                                    socket=self.socket, kind='update')
                     self.update_self(old_container=container, new_image=latest_image, count=1)
 
-                self.logger.info('%s will be updated', container.name)
+                self.logger.info(
+                    '%s will be updated from digest %s (tags: %s) to %s (tags: %s)',
+                    container.name,
+                    current_image.short_id.split(':')[1],
+                    ', '.join(map(str, get_tags_from_registry(current_image.tags[0].split(':')[0], current_image.id))),
+                    latest_image.short_id.split(':')[1],
+                    ', '.join(map(str, get_tags_from_registry(latest_image.tags[0].split(':')[0], latest_image.id)))
+                )
 
                 # Get container list to restart after update complete
                 depends_on = container.labels.get('com.ouroboros.depends-on', False)
